@@ -12,10 +12,10 @@ set_defaults()
 	MODE_PARAMETER="fm"
 	SQUELCH="50"
 	SQUELCH_DELAY="20"
-	CHOICE_SAMPLERATE="24k"
-	TUNER_GAIN="20"
-	#OUTPUT="aplay -r 24k -f S16_LE -t raw -c 1"
-	OUTPUT="play -t raw -r 24k -es -b 16 -c 1 -V1 -"
+	CHOICE_SAMPLERATE="25k"
+	TUNER_GAIN="40"
+	#OUTPUT="aplay -r 25k -f S16_LE -t raw -c 1"
+	OUTPUT="play -t raw -es -b 16 -c 1 -V1"
 	#OUTPUT="dsd -i - -o /dev/audio1"
 }
 
@@ -62,7 +62,7 @@ set_squelch_delay()
 
 set_tuner_gain()
 {
-	TUNER_GAIN=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Set Tuner Gain" --rangebox "" 1 50 0 100 20 2>&1 >/dev/tty)
+	TUNER_GAIN=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Set Tuner Gain" --rangebox "" 1 50 0 50 20 2>&1 >/dev/tty)
                         if [ $? = 1 ];then
                         main_menu
                         fi
@@ -71,12 +71,12 @@ set_tuner_gain()
 set_sample_rate()
 {
 	
-	MENU_SAMPLERATE=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Select Modes" --menu "Select :" 30 60 40 1 12k 2 24k 3 50k 4 100k 2>&1 >/dev/tty)
+	MENU_SAMPLERATE=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Select Modes" --menu "Select :" 30 60 40 1 12.5k 2 25k 3 50k 4 100k 2>&1 >/dev/tty)
 			if [ $? = 1 ];then
 			main_menu
 			fi
-	if [ "$MENU_SAMPLERATE" = "1" ]; then CHOICE_SAMPLERATE="12k"; fi
-	if [ "$MENU_SAMPLERATE" = "2" ]; then CHOICE_SAMPLERATE="24k"; fi
+	if [ "$MENU_SAMPLERATE" = "1" ]; then CHOICE_SAMPLERATE="12.5k"; fi
+	if [ "$MENU_SAMPLERATE" = "2" ]; then CHOICE_SAMPLERATE="25k"; fi
 	if [ "$MENU_SAMPLERATE" = "3" ]; then CHOICE_SAMPLERATE="50k"; fi
 	if [ "$MENU_SAMPLERATE" = "4" ]; then CHOICE_SAMPLERATE="100k"; fi
 }
@@ -103,8 +103,7 @@ configure_output()
 start_scanning()
 {
 	clear
-	echo "rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT"
-	rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT
+	dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "\Zb\Z1rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT -r $CHOICE_SAMPLERATE\Zn" "rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT -r $CHOICE_SAMPLERATE -" 30 80
 }
 
 
