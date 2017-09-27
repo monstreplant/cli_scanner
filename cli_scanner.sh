@@ -16,6 +16,7 @@ set_defaults()
 	CHOICE_SAMPLERATE="24k"
 	TUNER_GAIN="20"
 	OUTPUT="aplay -r 24k -f S16_LE -t raw -c 1"
+	#OUTPUT="dsd -i - -o /dev/audio1"
 }
 
 set_frequencies()
@@ -101,7 +102,6 @@ start_scanning()
 {
 	clear
 	echo "rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT"
-	read
 	rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT
 }
 
