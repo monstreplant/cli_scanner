@@ -9,13 +9,13 @@ dialog --backtitle "CLI-Scanner - V1.0" --title "Welcome" --msgbox "CLI Scanner 
 set_defaults()
 {
 	FREQ_PARAMETER="446M"
-	CHOICE_MODE="FM"
 	MODE_PARAMETER="fm"
 	SQUELCH="50"
 	SQUELCH_DELAY="20"
 	CHOICE_SAMPLERATE="24k"
 	TUNER_GAIN="20"
-	OUTPUT="aplay -r 24k -f S16_LE -t raw -c 1"
+	#OUTPUT="aplay -r 24k -f S16_LE -t raw -c 1"
+	OUTPUT="play -t raw -r 24k -es -b 16 -c 1 -V1 -"
 	#OUTPUT="dsd -i - -o /dev/audio1"
 }
 
@@ -37,11 +37,11 @@ set_mode()
 			if [ $? = 1 ];then
 			main_menu
 			fi
-	if [ "$MENU_MODE" = "1" ]; then CHOICE_MODE="FM"; MODE_PARAMETER="fm"; fi
-	if [ "$MENU_MODE" = "2" ]; then CHOICE_MODE="AM"; MODE_PARAMETER="am"; fi
-	if [ "$MENU_MODE" = "3" ]; then CHOICE_MODE="LSB"; MODE_PARAMETER="lsb"; fi
-	if [ "$MENU_MODE" = "4" ]; then CHOICE_MODE="USB"; MODE_PARAMETER="usb"; fi
-	if [ "$MENU_MODE" = "5" ]; then CHOICE_MODE="RAW"; MODE_PARAMETER="raw"; fi
+	if [ "$MENU_MODE" = "1" ]; then MODE_PARAMETER="fm"; fi
+	if [ "$MENU_MODE" = "2" ]; then MODE_PARAMETER="am"; fi
+	if [ "$MENU_MODE" = "3" ]; then MODE_PARAMETER="lsb"; fi
+	if [ "$MENU_MODE" = "4" ]; then MODE_PARAMETER="usb"; fi
+	if [ "$MENU_MODE" = "5" ]; then MODE_PARAMETER="raw"; fi
 }
 
 set_squelch()
@@ -71,12 +71,14 @@ set_tuner_gain()
 set_sample_rate()
 {
 	
-	MENU_SAMPLERATE=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Select Modes" --menu "Select :" 30 60 40 1 12k 2 24k 2>&1 >/dev/tty)
+	MENU_SAMPLERATE=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Select Modes" --menu "Select :" 30 60 40 1 12k 2 24k 3 50k 4 100k 2>&1 >/dev/tty)
 			if [ $? = 1 ];then
 			main_menu
 			fi
 	if [ "$MENU_SAMPLERATE" = "1" ]; then CHOICE_SAMPLERATE="12k"; fi
 	if [ "$MENU_SAMPLERATE" = "2" ]; then CHOICE_SAMPLERATE="24k"; fi
+	if [ "$MENU_SAMPLERATE" = "3" ]; then CHOICE_SAMPLERATE="50k"; fi
+	if [ "$MENU_SAMPLERATE" = "4" ]; then CHOICE_SAMPLERATE="100k"; fi
 }
 
 edit_frequencies()
@@ -108,7 +110,7 @@ start_scanning()
 
 main_menu ()
 {
-	MAIN_MENU=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Main Menu" --colors --menu "\ZbFREQUENCY:\Zn$FREQ_PARAMETER/$CHOICE_SAMPLERATE \ZbMODE:\Zn$CHOICE_MODE \ZbSQUELCH:\Zn$SQUELCH/$SQUELCH_DELAY \ZbTUNER GAIN:\Zn$TUNER_GAIN" 10 90 0 \
+	MAIN_MENU=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Main Menu" --colors --menu "\ZbFREQUENCY:\Zn$FREQ_PARAMETER/$CHOICE_SAMPLERATE \ZbMODE:\Zn$MODE_PARAMETER \ZbSQUELCH:\Zn$SQUELCH/$SQUELCH_DELAY \ZbTUNER GAIN:\Zn$TUNER_GAIN" 10 90 0 \
 1 "\Z1START scanning !\Zn" \
 2 "Set Frequencies" \
 3 "Set Mode" \
@@ -119,7 +121,16 @@ main_menu ()
 8 "Configure Output" \
 9 "Edit Frequencies" 2>&1 >/dev/tty)
 
-	if [ "$?" = "1" ]; then exit 1; fi
+	if [ "$?" = "1" ]; then
+	echo "FREQ_PARAMETER=\"$FREQ_PARAMETER\"" > session.save
+	echo "MODE_PARAMETER=\"$MODE_PARAMETER\"" >> session.save
+	echo "SQUELCH=\"$SQUELCH\"" >> session.save
+	echo "SQUELCH_DELAY=\"$SQUELCH_DELAY\"" >> session.save
+	echo "CHOICE_SAMPLERATE=\"$CHOICE_SAMPLERATE\"" >> session.save
+	echo "TUNER_GAIN=\"$TUNER_GAIN\"" >> session.save
+	echo "OUTPUT=\"$OUTPUT\"" >> session.save
+	exit 1
+	fi
 	if [ "$MAIN_MENU" = "1" ]; then start_scanning; main_menu; fi
 	if [ "$MAIN_MENU" = "2" ]; then set_frequencies; main_menu; fi
 	if [ "$MAIN_MENU" = "3" ]; then set_mode; main_menu; fi
@@ -131,5 +142,11 @@ main_menu ()
 	if [ "$MAIN_MENU" = "9" ]; then edit_frequencies; main_menu; fi
 }
 
-set_defaults
+if [ -f session.save ]; then
+
+	. session.save
+else
+	set_defaults
+fi
+
 main_menu
