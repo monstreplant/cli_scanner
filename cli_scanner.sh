@@ -14,7 +14,7 @@ set_defaults()
 	SQUELCH_DELAY="20"
 	CHOICE_SAMPLERATE="24k"
 	TUNER_GAIN="auto"
-	OUTPUT="play -t raw -es -b 16 -c 1 -V1 -G"
+	OUTPUT="play -t raw -es -b 16 -c 1 -V1 "
 	
 	#OUTPUT="dsd -i - -o /dev/audio1"
 	#OUTPUT="aplay -r 25k -f S16_LE -t raw -c 1"
