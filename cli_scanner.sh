@@ -62,7 +62,7 @@ set_squelch_delay()
 
 set_tuner_gain()
 {
-	TUNER_GAIN=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Set Tuner Gain" --rangebox "" 1 50 0 50 20 2>&1 >/dev/tty)
+	TUNER_GAIN=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Set Tuner Gain" --rangebox "" 1 50 0 50 40 2>&1 >/dev/tty)
                         if [ $? = 1 ];then
                         main_menu
                         fi
