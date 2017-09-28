@@ -10,13 +10,14 @@ set_defaults()
 {
 	FREQ_PARAMETER="446M"
 	MODE_PARAMETER="fm"
-	SQUELCH="50"
+	SQUELCH="300"
 	SQUELCH_DELAY="20"
-	CHOICE_SAMPLERATE="25k"
-	TUNER_GAIN="40"
-	#OUTPUT="aplay -r 25k -f S16_LE -t raw -c 1"
-	OUTPUT="play -t raw -es -b 16 -c 1 -V1"
+	CHOICE_SAMPLERATE="24k"
+	TUNER_GAIN="auto"
+	OUTPUT="play -t raw -es -b 16 -c 1 -V1 -G"
+	
 	#OUTPUT="dsd -i - -o /dev/audio1"
+	#OUTPUT="aplay -r 25k -f S16_LE -t raw -c 1"
 }
 
 set_frequencies()
@@ -29,6 +30,8 @@ set_frequencies()
 			fi
 	CHOICE_FREQ=$(cat $FREQUENCIES | grep -e "^$MENU_FREQ " | cut -d "," -f1)
 	FREQ_PARAMETER=$(cat $FREQUENCIES | grep -e "^$MENU_FREQ " | cut -d "," -f2)
+	CHOICE_SAMPLERATE=$(cat $FREQUENCIES | grep -e "^$MENU_FREQ " | cut -d "," -f3)
+	MODE_PARAMETER=$(cat $FREQUENCIES | grep -e "^$MENU_FREQ " | cut -d "," -f4)
 }
 
 set_mode()
@@ -46,7 +49,7 @@ set_mode()
 
 set_squelch()
 {
-	SQUELCH=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Set Squelch" --rangebox "" 1 50 0 100 50 2>&1 >/dev/tty)
+	SQUELCH=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Set Squelch" --rangebox "" 1 100 0 500 $SQUELCH 2>&1 >/dev/tty)
                         if [ $? = 1 ];then
                         main_menu
                         fi
@@ -62,22 +65,30 @@ set_squelch_delay()
 
 set_tuner_gain()
 {
+	MENU_GAIN=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Select Modes" --menu "Select :" 20 30 30 1 AUTO 2 USER 2>&1 >/dev/tty)
+			if [ $? = 1 ];then
+			main_menu
+			fi
+	if [ "$MENU_GAIN" = "1" ]; then TUNER_GAIN="auto"; main_menu; fi
+	if [ "$MENU_GAIN" = "2" ]; then 
 	TUNER_GAIN=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Set Tuner Gain" --rangebox "" 1 50 0 50 40 2>&1 >/dev/tty)
                         if [ $? = 1 ];then
+			TUNER_GAIN="auto"
                         main_menu
                         fi
+	fi
 }
 
 set_sample_rate()
 {
 	
-	MENU_SAMPLERATE=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Select Modes" --menu "Select :" 30 60 40 1 12.5k 2 25k 3 50k 4 100k 2>&1 >/dev/tty)
+	MENU_SAMPLERATE=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Select Modes" --menu "Select :" 30 60 40 1 12.5k 2 24k 3 25k 4 100k 2>&1 >/dev/tty)
 			if [ $? = 1 ];then
 			main_menu
 			fi
 	if [ "$MENU_SAMPLERATE" = "1" ]; then CHOICE_SAMPLERATE="12.5k"; fi
-	if [ "$MENU_SAMPLERATE" = "2" ]; then CHOICE_SAMPLERATE="25k"; fi
-	if [ "$MENU_SAMPLERATE" = "3" ]; then CHOICE_SAMPLERATE="50k"; fi
+	if [ "$MENU_SAMPLERATE" = "2" ]; then CHOICE_SAMPLERATE="24k"; fi
+	if [ "$MENU_SAMPLERATE" = "3" ]; then CHOICE_SAMPLERATE="25k"; fi
 	if [ "$MENU_SAMPLERATE" = "4" ]; then CHOICE_SAMPLERATE="100k"; fi
 }
 
@@ -102,14 +113,17 @@ configure_output()
 
 start_scanning()
 {
-	clear
-	dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "\Zb\Z1rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT -r $CHOICE_SAMPLERATE\Zn" "rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT -r $CHOICE_SAMPLERATE -" 30 80
+	if [ "$TUNER_GAIN" = "auto" ]; then
+		dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "" "rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -l $SQUELCH | $OUTPUT -r $CHOICE_SAMPLERATE -" 30 80
+	else
+		dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "" "rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT -r $CHOICE_SAMPLERATE -" 30 80
+	fi	
 }
 
 
 main_menu ()
 {
-	MAIN_MENU=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Main Menu" --colors --menu "\ZbFREQUENCY:\Zn$FREQ_PARAMETER/$CHOICE_SAMPLERATE \ZbMODE:\Zn$MODE_PARAMETER \ZbSQUELCH:\Zn$SQUELCH/$SQUELCH_DELAY \ZbTUNER GAIN:\Zn$TUNER_GAIN" 10 90 0 \
+	MAIN_MENU=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Main Menu" --colors --menu "\ZbFREQUENCY:\Zn$FREQ_PARAMETER/$CHOICE_SAMPLERATE \ZbMODE:\Zn$MODE_PARAMETER \ZbSQUELCH:\Zn$SQUELCH\Zb TUNER GAIN:\Zn$TUNER_GAIN" 10 90 0 \
 1 "\Z1START scanning !\Zn" \
 2 "Set Frequencies" \
 3 "Set Mode" \
@@ -128,7 +142,8 @@ main_menu ()
 	echo "CHOICE_SAMPLERATE=\"$CHOICE_SAMPLERATE\"" >> session.save
 	echo "TUNER_GAIN=\"$TUNER_GAIN\"" >> session.save
 	echo "OUTPUT=\"$OUTPUT\"" >> session.save
-	exit 1
+	clear
+	exit
 	fi
 	if [ "$MAIN_MENU" = "1" ]; then start_scanning; main_menu; fi
 	if [ "$MAIN_MENU" = "2" ]; then set_frequencies; main_menu; fi
