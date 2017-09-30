@@ -2,7 +2,7 @@
 # Interface Dialog pour RTL-SDR - Zipacna 2017 - www.zipacna.fr
 
 FREQUENCIES="cli_scanner_frequencies.csv"
-RTL_FM_BIN=
+RTL_FM_BIN=./rtl_fm
 
 dialog --backtitle "CLI-Scanner - V1.0" --title "Welcome" --msgbox "CLI Scanner is a frontend for RTL-SDR\n\nIn case of problem, please contact us at register@zipacna.fr" 10 100
 
@@ -32,6 +32,7 @@ set_frequencies()
 	FREQ_PARAMETER=$(cat $FREQUENCIES | grep -e "^$MENU_FREQ " | cut -d "," -f2)
 	CHOICE_SAMPLERATE=$(cat $FREQUENCIES | grep -e "^$MENU_FREQ " | cut -d "," -f3)
 	MODE_PARAMETER=$(cat $FREQUENCIES | grep -e "^$MENU_FREQ " | cut -d "," -f4)
+configure_output
 }
 
 set_mode()
@@ -90,6 +91,7 @@ set_sample_rate()
 	if [ "$MENU_SAMPLERATE" = "2" ]; then CHOICE_SAMPLERATE="24k"; fi
 	if [ "$MENU_SAMPLERATE" = "3" ]; then CHOICE_SAMPLERATE="25k"; fi
 	if [ "$MENU_SAMPLERATE" = "4" ]; then CHOICE_SAMPLERATE="100k"; fi
+configure_output
 }
 
 edit_frequencies()
@@ -116,12 +118,14 @@ configure_output()
 
 start_scanning()
 {
+	echo $OUTPUT > debug.log
+	killall -s9 rtl_fm
 	if [ -z "$OUTPUT" ]; then dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "ERROR !" --msgbox "No Output Selected" 5 30; main_menu; fi
 
 	if [ "$TUNER_GAIN" = "auto" ]; then
-		dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "" "rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -l $SQUELCH | $OUTPUT" 30 80
+		dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "" "$RTL_FM_BIN -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -l $SQUELCH | $OUTPUT" 30 80
 	else
-		dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "" "rtl_fm -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH | $OUTPUT" 30 80
+		dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "" "$RTL_FM_BIN -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH  -E deemp | $OUTPUT" 30 80
 	fi
 }
 
