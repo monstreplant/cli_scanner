@@ -15,7 +15,7 @@ set_defaults()
 	CHOICE_SAMPLERATE="24k"
 	TUNER_GAIN="40"
 	#OUTPUT="play -t raw -es -b 16 -c 1 -V1 "
-	#OUTPUT="dsd -t -i - -o /dev/snd/controlC0"
+	#OUTPUT="dsd -s -i - -o /dev/snd/controlC0"
 	#OUTPUT="aplay -r 24k -f S16_LE -t raw -c 1"
 	#OUTPUT="aplay -f S16_LE -t raw -c 1"
 }
@@ -113,20 +113,22 @@ configure_output()
 			fi
 	if [ "$MENU_OUTPUT" = "1" ]; then OUTPUT="aplay -f S16_LE -t raw -c 1 -r $CHOICE_SAMPLERATE -"; fi
 	if [ "$MENU_OUTPUT" = "2" ]; then OUTPUT="play -t raw -es -b 16 -c 1 -V1 -r $CHOICE_SAMPLERATE -"; fi
-	if [ "$MENU_OUTPUT" = "3" ]; then OUTPUT="dsd -t -i - -o /dev/snd/controlC0"; fi
+	if [ "$MENU_OUTPUT" = "3" ]; then OUTPUT="dsd -s -i - -o /dev/snd/controlC0"; fi
 }
 
 start_scanning()
 {
-	echo $OUTPUT > debug.log
 	killall -s9 rtl_fm
 	if [ -z "$OUTPUT" ]; then dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "ERROR !" --msgbox "No Output Selected" 5 30; main_menu; fi
 
 	if [ "$TUNER_GAIN" = "auto" ]; then
-		dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "" "$RTL_FM_BIN -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -l $SQUELCH | $OUTPUT" 30 80
+		COMMAND="$RTL_FM_BIN -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -l $SQUELCH | $OUTPUT"
 	else
-		dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "" "$RTL_FM_BIN -M $MODE_PARAMETER -f$FREQ_PARAMETER -s $CHOICE_SAMPLERATE -g $TUNER_GAIN -l $SQUELCH  -E deemp | $OUTPUT" 30 80
+		COMMAND="$RTL_FM_BIN -M $MODE_PARAMETER -f$FREQ_PARAMETER -g $TUNER_GAIN -s $CHOICE_SAMPLERATE -l $SQUELCH | $OUTPUT"
 	fi
+
+	echo $COMMAND > debug.log
+	dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "\Z1$COMMAND\Zn" "$COMMAND" 30 80
 }
 
 
