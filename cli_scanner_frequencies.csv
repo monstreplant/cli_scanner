@@ -4,7 +4,7 @@
 3 70cm,430M:440M:25k,25k,fm
 4 PMR,446.00625M:446.19375M:12.5k,25k,fm
 5 LPD,433.050M:434.790M:25k,25k,fm
-6 PM-Mougins,171.479M,25k,fm
+6 PM-Mougins,171.479M,48k,fm
 7 Range1,155M:156M:25k,25k,fm
 8 Range2,460M:465M:25k,25k,fm
 9 Range3,169M:170M:25k,25k,fm
@@ -13,3 +13,4 @@
 12 PM,155.455M,25k,fm
 13 PM,154.914M,25k,fm
 14 Taxi,155.780M,25k,fm
+15 Test,446.193M,48k,fm
