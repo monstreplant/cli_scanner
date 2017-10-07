@@ -3,6 +3,7 @@
 
 FREQUENCIES="cli_scanner_frequencies.csv"
 RTL_FM_BIN=./rtl_fm
+RTL_TCP_BIN=rtl_tcp
 
 dialog --backtitle "CLI-Scanner - V1.0" --title "Welcome" --msgbox "CLI Scanner is a frontend for RTL-SDR\n\nIn case of problem, please contact us at register@zipacna.fr" 10 100
 
@@ -131,19 +132,24 @@ start_scanning()
 	dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "\Z1$COMMAND\Zn" "$COMMAND" 30 80
 }
 
+start_tcp()
+{
+	dialog --clear --colors --backtitle "CLI-Scanner - V1.0" --title "Running: CTRL+C to Exit" --prgbox "RTL_TCP" "$RTL_TCP_BIN -a 192.168.1.2 -p 1234" 30 80
+}
 
 main_menu ()
 {
 	MAIN_MENU=$(dialog --clear --backtitle "CLI-Scanner - V1.0" --title "Main Menu" --colors --menu "\ZbFREQUENCY:\Zn$FREQ_PARAMETER/$CHOICE_SAMPLERATE \ZbMODE:\Zn$MODE_PARAMETER \ZbSQUELCH:\Zn$SQUELCH\Zb TUNER GAIN:\Zn$TUNER_GAIN" 10 90 0 \
 1 "\Z1START scanning !\Zn" \
-2 "Set Frequencies" \
-3 "Set Mode" \
-4 "Set Squelch" \
-5 "Set Squelch Delay" \
-6 "Set Sample Rate" \
-7 "Set Tuner Gain" \
-8 "Configure Output" \
-9 "Edit Frequencies" 2>&1 >/dev/tty)
+2 "START TCP" \
+3 "Set Frequencies" \
+4 "Set Mode" \
+5 "Set Squelch" \
+6 "Set Squelch Delay" \
+7 "Set Sample Rate" \
+8 "Set Tuner Gain" \
+9 "Configure Output" \
+10 "Edit Frequencies" 2>&1 >/dev/tty)
 
 	if [ "$?" = "1" ]; then
 	echo "FREQ_PARAMETER=\"$FREQ_PARAMETER\"" > session.save
@@ -157,14 +163,15 @@ main_menu ()
 	exit
 	fi
 	if [ "$MAIN_MENU" = "1" ]; then start_scanning; main_menu; fi
-	if [ "$MAIN_MENU" = "2" ]; then set_frequencies; main_menu; fi
-	if [ "$MAIN_MENU" = "3" ]; then set_mode; main_menu; fi
-	if [ "$MAIN_MENU" = "4" ]; then set_squelch; main_menu; fi
-	if [ "$MAIN_MENU" = "5" ]; then set_squelch_delay; main_menu; fi
-	if [ "$MAIN_MENU" = "6" ]; then set_sample_rate; main_menu; fi
-	if [ "$MAIN_MENU" = "7" ]; then set_tuner_gain; main_menu; fi
-	if [ "$MAIN_MENU" = "8" ]; then configure_output; main_menu; fi
-	if [ "$MAIN_MENU" = "9" ]; then edit_frequencies; main_menu; fi
+	if [ "$MAIN_MENU" = "2" ]; then start_tcp; main_menu; fi
+	if [ "$MAIN_MENU" = "3" ]; then set_frequencies; main_menu; fi
+	if [ "$MAIN_MENU" = "4" ]; then set_mode; main_menu; fi
+	if [ "$MAIN_MENU" = "5" ]; then set_squelch; main_menu; fi
+	if [ "$MAIN_MENU" = "6" ]; then set_squelch_delay; main_menu; fi
+	if [ "$MAIN_MENU" = "7" ]; then set_sample_rate; main_menu; fi
+	if [ "$MAIN_MENU" = "8" ]; then set_tuner_gain; main_menu; fi
+	if [ "$MAIN_MENU" = "9" ]; then configure_output; main_menu; fi
+	if [ "$MAIN_MENU" = "10" ]; then edit_frequencies; main_menu; fi
 }
 
 if [ -f session.save ]; then
